@@ -3,5 +3,5 @@
 // لا تضع أي مفتاح يبدأ بـ sb_secret_ أو service_role.
 window.SAMA_CONFIG = {
   url: "https://lauytzuuxtnycglzujdg.supabase.co",
-  key: "PASTE_YOUR_PUBLISHABLE_KEY_HERE"
+   key: "sb_publishable_82p-O6Lu3RLlHo2r0sdwhQ_eHi_tFWS"
 };
