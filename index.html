@@ -18,8 +18,58 @@ function renderCats(){let names=["جميع النباتات",...categories.filte
 function renderProducts(){let q=$("search").value.trim().toLowerCase(),list=plants.filter(p=>(active==="جميع النباتات"||p.category===active)&&(`${p.name} ${p.category} ${p.description||""}`).toLowerCase().includes(q));$("listTitle").textContent=active;$("count").textContent=list.length+" منتج";$("products").innerHTML=list.length?list.map(p=>`<article class="card"><div class="photo" data-detail="${esc(p.id)}">${p.image_url?`<img loading="lazy" src="${esc(p.image_url)}" alt="${esc(p.name)}" onerror="this.style.display='none'">`:"<div style='display:grid;place-items:center;height:100%;font-size:48px'>🌿</div>"}</div><div class="card-body"><h3>${esc(p.name)}</h3><div class="desc">${esc(p.description||"نبتة متوفرة في مشتل سما الكوت")}</div><div class="price">${money(p.price)}</div><div class="actions"><button class="add" data-add="${esc(p.id)}">＋ أضف للسلة</button><button class="details" data-detail="${esc(p.id)}">عرض التفاصيل</button></div></div></article>`).join(""):`<div class="empty">ماكو منتجات ظاهرة بهذا التصنيف حالياً.</div>`;document.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>add(b.dataset.add));document.querySelectorAll("[data-detail]").forEach(b=>b.onclick=()=>details(b.dataset.detail))}
 function add(id,n=1){if(!byId(id))return;cart[id]=(cart[id]||0)+n;countCart();renderCart();toast("تمت إضافة المنتج للسلة")};function change(id,n){if(n<1)delete cart[id];else cart[id]=n;countCart();renderCart()};function countCart(){$("cartCount").textContent=Object.values(cart).reduce((a,b)=>a+b,0)}
 function details(id){let p=byId(id);if(!p)return;$("detailContent").innerHTML=`<div class="detail"><img src="${esc(p.image_url||"sama-nursery-logo.png")}" alt="${esc(p.name)}" onerror="this.src='sama-nursery-logo.png'"><div><h3 id="detailTitle">${esc(p.name)}</h3><small>التصنيف: ${esc(p.category)}</small><p>${esc(p.description||"نبتة متوفرة في مشتل سما الكوت")}</p><div class="price">${money(p.price)}</div><p>الكمية: <span class="qty"><button id="dm">−</button><span id="dq">1</span><button id="dp">＋</button></span></p><button class="btn primary" id="da">أضف للسلة 🛒</button></div></div>`;let q=1;$("dm").onclick=()=>{q=Math.max(1,q-1);$("dq").textContent=q};$("dp").onclick=()=>{$("dq").textContent=++q};$("da").onclick=()=>{add(id,q);close("detailOverlay")};$("detailOverlay").classList.add("open")}
-function renderCart(){let entries=Object.entries(cart).map(([id,qty])=>({p:byId(id),qty})).filter(x=>x.p),total=entries.reduce((s,x)=>s+Number(x.p.price||0)*x.qty,0);if(!entries.length){$("cartContent").innerHTML='<div class="empty">سلتك فارغة حالياً 🌿<br>اختار النباتات واضغط «أضف للسلة».</div>';return}$("cartContent").innerHTML=`<div class="cartlist">${entries.map(({p,qty})=>`<article class="cartitem"><img src="${esc(p.image_url||"sama-nursery-logo.png")}" alt="" onerror="this.src='sama-nursery-logo.png'"><div><h3>${esc(p.name)}</h3><small>${money(p.price)} للقطعة</small><div><b>${money(Number(p.price||0)*qty)}</b></div></div><div class="controls"><div class="qty"><button data-minus="${esc(p.id)}">−</button><span>${qty}</span><button data-plus="${esc(p.id)}">＋</button></div><button class="remove" data-remove="${esc(p.id)}">حذف</button></div></article>`).join("")}</div><div class="summary"><div class="total"><span>المجموع الكلي</span><span>${money(total)}</span></div><div class="fields"><input id="custName" placeholder="اسمك (اختياري)"><input id="custArea" placeholder="المنطقة أو عنوان التوصيل (اختياري)"><textarea id="custNote" placeholder="ملاحظات على الطلب (اختياري)"></textarea></div><div class="note">راح ينفتح واتساب برسالة جاهزة. اضغط إرسال داخل واتساب حتى يوصل الطلب للمشتل. يتم تأكيد أجور التوصيل بالمحادثة.</div><button class="wa" id="sendOrder">إرسال الطلب عبر واتساب ↗</button></div>`;document.querySelectorAll("[data-minus]").forEach(b=>b.onclick=()=>change(b.dataset.minus,(cart[b.dataset.minus]||1)-1));document.querySelectorAll("[data-plus]").forEach(b=>b.onclick=()=>change(b.dataset.plus,(cart[b.dataset.plus]||0)+1));document.querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>change(b.dataset.remove,0));$("sendOrder").onclick=sendOrder}
-function sendOrder(){let e=Object.entries(cart).map(([id,qty])=>({p:byId(id),qty})).filter(x=>x.p);if(!e.length)return;let total=e.reduce((s,x)=>s+Number(x.p.price||0)*x.qty,0),name=($("custName")?.value||"").trim(),area=($("custArea")?.value||"").trim(),note=($("custNote")?.value||"").trim(),lines=["🌿 *طلب جديد من موقع مشتل سما الكوت*","",...e.map((x,i)=>`${i+1}. ${x.p.name}\nالكمية: ${x.qty}\nسعر القطعة: ${money(x.p.price)}\nالمجموع: ${money(Number(x.p.price||0)*x.qty)}`),"",`*المجموع الكلي: ${money(total)}*`];if(name)lines.push("الاسم: "+name);if(area)lines.push("المنطقة/العنوان: "+area);if(note)lines.push("ملاحظات: "+note);lines.push("","يرجى تأكيد توفر النباتات وأجور التوصيل.");window.open("https://wa.me/9647726506022?text="+encodeURIComponent(lines.join("\n")),"_blank")}
+
+function renderCart(){
+let entries=Object.entries(cart).map(([id,qty])=>({p:byId(id),qty})).filter(x=>x.p);
+let total=entries.reduce((s,x)=>s+Number(x.p.price||0)*x.qty,0);
+if(!entries.length){
+$("cartContent").innerHTML='<div class="empty">سلتك فارغة حالياً 🌿</div>';
+return;
+}
+$("cartContent").innerHTML=`<div class="cartlist">${entries.map(({p,qty})=>`<article class="cartitem"><img src="${esc(p.image_url||"sama-nursery-logo.png")}"><div><h3>${esc(p.name)}</h3><small>${money(p.price)} للقطعة</small><div><b>${money(Number(p.price||0)*qty)}</b></div></div><div class="controls"><div class="qty"><button data-minus="${esc(p.id)}">−</button><span>${qty}</span><button data-plus="${esc(p.id)}">＋</button></div><button class="remove" data-remove="${esc(p.id)}">حذف</button></div></article>`).join("")}</div>
+<div class="summary">
+<div class="total"><span>المجموع الكلي</span><span>${money(total)}</span></div>
+<div class="fields">
+<input id="custName" placeholder="اسمك (اختياري)">
+<input id="custArea" placeholder="المنطقة أو عنوان التوصيل (اختياري)">
+<input id="custPhone" type="tel" placeholder="أضف رقم الهاتف">
+<textarea id="custNote" placeholder="ملاحظات على الطلب (اختياري)"></textarea>
+</div>
+<div class="note">يرجى إضافة رقم هاتف للتواصل وتأكيد الطلب.</div>
+<button class="wa" id="sendOrder">إرسال الطلب عبر واتساب ↗</button>
+</div>`;
+document.querySelectorAll("[data-minus]").forEach(b=>b.onclick=()=>change(b.dataset.minus,(cart[b.dataset.minus]||1)-1));
+document.querySelectorAll("[data-plus]").forEach(b=>b.onclick=()=>change(b.dataset.plus,(cart[b.dataset.plus]||0)+1));
+document.querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>change(b.dataset.remove,0));
+$("sendOrder").onclick=sendOrder;
+}  
+function sendOrder(){
+let e=Object.entries(cart).map(([id,qty])=>({p:byId(id),qty})).filter(x=>x.p);
+if(!e.length)return;
+let total=e.reduce((s,x)=>s+Number(x.p.price||0)*x.qty,0);
+let name=$("custName").value.trim();
+let area=$("custArea").value.trim();
+let phone=$("custPhone").value.trim();
+let note=$("custNote").value.trim();
+if(!phone){
+alert("يرجى إضافة رقم الهاتف قبل إرسال الطلب");
+$("custPhone").focus();
+return;
+}
+let lines=[
+"🌿 *طلب جديد من موقع مشتل سما الكوت*",
+"",
+...e.map((x,i)=>`${i+1}. ${x.p.name}\nالكمية: ${x.qty}\nسعر القطعة: ${money(x.p.price)}\nالمجموع: ${money(Number(x.p.price||0)*x.qty)}`),
+"",
+`*المجموع الكلي: ${money(total)}*`,
+"رقم الهاتف: "+phone
+];
+if(name)lines.push("الاسم: "+name);
+if(area)lines.push("المنطقة/العنوان: "+area);
+if(note)lines.push("ملاحظات: "+note);
+lines.push("يرجى تأكيد توفر النباتات وأجور التوصيل.");
+window.open("https://wa.me/9647726506022?text="+encodeURIComponent(lines.join("\n")),"_blank");
+}
 function close(id){$(id).classList.remove("open")}function toast(s){let t=$("toast");if(t)t.remove();t=document.createElement("div");t.id="toast";t.textContent=s;t.style.cssText="position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#173f2b;color:white;padding:12px 17px;border-radius:24px;z-index:60;max-width:90%;font-size:13px";document.body.appendChild(t);setTimeout(()=>t.remove(),2000)}document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>close(b.dataset.close));document.querySelectorAll(".overlay").forEach(o=>o.onclick=e=>{if(e.target===o)o.classList.remove("open")});document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelectorAll(".overlay.open").forEach(o=>o.classList.remove("open"))});$("openCart").onclick=()=>{$("cartOverlay").classList.add("open");renderCart()};$("search").oninput=renderProducts;$("resetBtn").onclick=()=>{active="جميع النباتات";$("search").value="";renderCats();renderProducts()};function section(which){let d=which==="decor";$("nurserySection").classList.toggle("hidden",d);$("decorSection").classList.toggle("hidden",!d);$("nurseryTab").classList.toggle("primary",!d);$("nurseryNav").classList.toggle("primary",!d);$("decorTab").style.outline=d?"2px solid #c5a45b":"none";$("decorNav").style.outline=d?"2px solid #c5a45b":"none"}["nurseryTab","nurseryNav"].forEach(id=>$(id).onclick=()=>section("nursery"));["decorTab","decorNav"].forEach(id=>$(id).onclick=()=>section("decor"));
 async function load(){$("year").textContent=new Date().getFullYear();if(!ready()){$("products").innerHTML='<div class="status">راجع إعداد الاتصال في config.js.</div>';return}try{let [cats,prods]=await Promise.all([api("categories?select=id,name,slug,brand&order=id.asc"),api("products?select=id,name,description,price,image_url,category_id,brand,is_available,sort_order&is_available=eq.true&order=sort_order.asc")]);categories=cats;let map=new Map(cats.map(c=>[String(c.id),c]));plants=prods.filter(p=>p.brand==="nursery").map(p=>({...p,category:(map.get(String(p.category_id))||{}).name||"نباتات أخرى"}));renderCats();renderProducts();countCart()}catch(e){console.error(e);$("products").innerHTML='<div class="status">تعذّر تحميل المنتجات. راجع إعدادات Supabase وسياسات القراءة.</div>'}}load();
 </script></body></html>
