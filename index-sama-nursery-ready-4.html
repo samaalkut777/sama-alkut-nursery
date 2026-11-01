@@ -44,4 +44,18 @@ document.querySelectorAll("[data-decor-cat]").forEach(button => {
     button.classList.add("active");
 
     const selected = button.dataset.decorCat;
-    document.querySelectorAll(".decor-card
+    
+
+document.querySelectorAll(".decor-card").forEach(card => {
+  const title = card.querySelector("h3")?.textContent || "";
+  card.style.display = selected === "سما ديكور" ||
+    (selected === "الاشجار الصناعية" && title.includes("شجرة")) ||
+    (selected === "الورد الصناعي" && title.includes("الورد")) ||
+    (selected === "ديكورات الورد" && title.includes("ديكور"))
+    ? "" : "none";
+});
+});
+});
+</script><script src="sama-checkout.js"></script>
+</body></html>
+  
