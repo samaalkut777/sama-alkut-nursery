@@ -63,6 +63,15 @@ button.danger{background:#9b2727}
 <div id="products">جارٍ التحميل...</div>
 </div>
 </section>
+ 
+<section class="panel" id="ordersPanel" style="display:none">
+  <h2>📦 إدارة طلبات الزبائن</h2>
+  <p class="muted">عرض الطلبات وتحديث حالة تجهيزها واستلامها.</p>
+  <button id="refreshOrdersBtn" class="secondary">تحديث الطلبات</button>
+  <p id="ordersMsg" class="muted"></p>
+  <div id="ordersList">جارٍ تحميل الطلبات...</div>
+</section>
+
 </main>
 
 <script src="config.js"></script>
@@ -195,7 +204,101 @@ $("saveBtn").onclick=async()=>{
   message("لم يتم الحفظ: "+(err.message||"تحقق من صلاحيات قاعدة البيانات ومخزن الصور."));
  }finally{$("saveBtn").disabled=false}
 };
-start();
+
+const orderStatuses = {
+  pending: "قيد التجهيز",
+  prepared: "تم التجهيز",
+  received: "تم الاستلام"
+};
+
+async function loadOrders() {
+  $("ordersMsg").textContent = "جارٍ تحديث الطلبات...";
+  const { data, error } = await db.from("orders")
+    .select("id,order_number,customer_name,customer_phone,customer_area,customer_note,total,status,created_at")
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  if (error) {
+    $("ordersMsg").textContent = "تعذر تحميل الطلبات: " + error.message;
+    return;
+  }
+
+  const orders = data || [];
+  $("ordersMsg").textContent = "عدد الطلبات المعروضة: " + orders.length;
+
+  if (!orders.length) {
+    $("ordersList").textContent = "لا توجد طلبات حالياً.";
+    return;
+  }
+
+  const ids = orders.map(o => o.id);
+  const { data: items, error: itemsError } = await db
+    .from("order_items")
+    .select("order_id,product_name,quantity,unit_price,line_total")
+    .in("order_id", ids);
+
+  if (itemsError) {
+    $("ordersMsg").textContent = "تعذر تحميل تفاصيل الطلبات: " + itemsError.message;
+    return;
+  }
+
+  $("ordersList").innerHTML = orders.map(o => {
+    const lines = (items || []).filter(i => i.order_id === o.id);
+    return `
+      <article class="item">
+        <h3>طلب ${esc(o.order_number)}</h3>
+        <p><strong>الزبون:</strong> ${esc(o.customer_name)}</p>
+        <p><strong>الهاتف:</strong> ${esc(o.customer_phone)}</p>
+        <p><strong>المنطقة:</strong> ${esc(o.customer_area || "غير محددة")}</p>
+        <p><strong>ملاحظات:</strong> ${esc(o.customer_note || "لا توجد")}</p>
+        <p><strong>التاريخ:</strong> ${esc(new Date(o.created_at).toLocaleString("ar-IQ"))}</p>
+        <h3>المنتجات المطلوبة</h3>
+        ${lines.map(i => `
+          <p>${esc(i.product_name)} × ${Number(i.quantity)}
+          — ${Number(i.line_total).toLocaleString("en-US")} د.ع</p>
+        `).join("")}
+        <p><strong>الإجمالي:</strong> ${Number(o.total).toLocaleString("en-US")} د.ع</p>
+        <label>حالة الطلب</label>
+        <select data-order-id="${esc(o.id)}">
+          ${Object.entries(orderStatuses).map(([value, label]) =>
+            `<option value="${value}" ${o.status === value ? "selected" : ""}>${label}</option>`
+          ).join("")}
+        </select>
+      </article>`;
+  }).join("");
+}
+
+$("refreshOrdersBtn").onclick = loadOrders;
+
+$("ordersList").onchange = async e => {
+  const select = e.target.closest("select[data-order-id]");
+  if (!select) return;
+
+  const id = select.dataset.orderId;
+  const status = select.value;
+  select.disabled = true;
+
+  const { error } = await db.from("orders")
+    .update({ status })
+    .eq("id", id);
+
+  if (error) {
+    $("ordersMsg").textContent = "فشل تحديث الحالة: " + error.message;
+  } else {
+    $("ordersMsg").textContent = "تم تحديث حالة الطلب بنجاح.";
+  }
+
+  await loadOrders();
+};
+
+const originalOpenApp = openApp;
+openApp = async function() {
+  await originalOpenApp();
+  $("ordersPanel").style.display = "block";
+  await loadOrders();
+};
+
+ start();
 </script>
 </body>
 </html>
