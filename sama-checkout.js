@@ -24,6 +24,76 @@
   }
   
 
+function showTrackingPanel(status, orderNumber) {
+  document.getElementById("samaTrackingPanel")?.remove();
+
+  const stages = [
+    { key: "pending", label: "قيد التجهيز" },
+    { key: "prepared", label: "تم التجهيز" },
+    { key: "received", label: "تم الاستلام" }
+  ];
+
+  const current = stages.findIndex(stage => stage.key === status);
+  if (current === -1) return;
+
+  const overlay = document.createElement("div");
+  overlay.id = "samaTrackingPanel";
+  overlay.style.cssText = "position:fixed;inset:0;z-index:10000;background:#0007;display:flex;justify-content:flex-end;direction:rtl";
+
+  const panel = document.createElement("div");
+  panel.style.cssText = "width:min(390px,92vw);height:100%;background:#fff;padding:24px;box-sizing:border-box;box-shadow:0 0 25px #0002;overflow-y:auto;font-family:inherit";
+
+  const heading = document.createElement("h2");
+  heading.textContent = "📦 متابعة طلبك";
+  heading.style.cssText = "color:#173f2b;margin:0 0 12px";
+
+  const number = document.createElement("p");
+  number.textContent = "رقم الطلب: " + orderNumber;
+  number.style.cssText = "font-size:14px;overflow-wrap:anywhere;color:#555";
+
+  const close = document.createElement("button");
+  close.textContent = "✕ إغلاق";
+  close.style.cssText = "border:0;background:#edf2eb;padding:10px 16px;border-radius:10px;cursor:pointer;margin-bottom:24px";
+  close.onclick = () => overlay.remove();
+
+  panel.append(heading, number, close);
+
+  stages.forEach((stage, index) => {
+    const completed = index <= current;
+
+    const row = document.createElement("div");
+    row.style.cssText = "display:flex;gap:15px;min-height:105px";
+
+    const indicator = document.createElement("div");
+    indicator.style.cssText = "display:flex;flex-direction:column;align-items:center";
+
+    const circle = document.createElement("div");
+    circle.textContent = completed ? "✓" : String(index + 1);
+    circle.style.cssText = "width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-weight:bold;flex-shrink:0;background:" + (completed ? "#18864b;color:white" : "#e5e9e5;color:#777");
+
+    indicator.append(circle);
+
+    if (index < stages.length - 1) {
+      const line = document.createElement("div");
+      line.style.cssText = "width:4px;flex:1;min-height:55px;border-radius:4px;background:" + (index < current ? "#18864b" : "#e5e9e5");
+      indicator.append(line);
+    }
+
+    const label = document.createElement("div");
+    label.textContent = stage.label;
+    label.style.cssText = "padding-top:7px;font-size:18px;font-weight:bold;color:" + (completed ? "#173f2b" : "#999");
+
+    row.append(indicator, label);
+    panel.append(row);
+  });
+
+  overlay.append(panel);
+  overlay.onclick = event => {
+    if (event.target === overlay) overlay.remove();
+  };
+  document.body.append(overlay);
+}
+  
 function showFloatingTrackingButton() {
   let lastOrder;
   try {
@@ -66,7 +136,7 @@ function showFloatingTrackingButton() {
         received: "تم الاستلام"
       };
 
-      alert("📦 حالة طلبك: " + (labels[result.status] || "غير معروفة"));
+      showTrackingPanel(result.status, lastOrder.order_number);
     } catch (error) {
       alert("تعذر جلب حالة الطلب. حاول مرة أخرى.");
     } finally {
