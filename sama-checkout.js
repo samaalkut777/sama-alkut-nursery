@@ -9,6 +9,20 @@
   const value = id => (get(id)?.value || "").trim();
   const saved = { name: "", phone: "", area: "", note: "" };
   let busy = false;
+  
+  const LAST_ORDER_KEY = "sama_nursery_last_order";
+
+  function saveLastOrder(data) {
+    try {
+      localStorage.setItem(LAST_ORDER_KEY, JSON.stringify({
+        order_number: data.order_number,
+        tracking_code: data.tracking_code
+      }));
+    } catch (error) {
+      console.warn("تعذر حفظ بيانات التتبع");
+    }
+  }
+  
 
   function saveFields() {
     if (get("custName")) saved.name = value("custName");
@@ -58,6 +72,67 @@
     confirm.textContent = "تأكيد الطلب";
     confirm.onclick = confirmOrder;
     whatsapp.before(confirm);
+    
+    try {
+      const lastOrder = JSON.parse(localStorage.getItem(LAST_ORDER_KEY) || "null");
+      if (lastOrder?.order_number && lastOrder?.tracking_code) {
+        const followButton = document.createElement("button");
+        followButton.type = "button";
+        
+        followButton.id = "followLastOrder";
+        
+        followButton.textContent = "📦 متابعة آخر طلب";
+        followButton.className = "btn primary";
+        followButton.style.cssText = "width:100%;margin-top:10px;padding:13px;border-radius:11px";
+        whatsapp.after(followButton);
+      }
+    } catch (error) {
+      console.warn("تعذر قراءة آخر طلب");
+    }
+
+    const followButton = content.querySelector("#followLastOrder");
+
+    
+
+    if (followButton) {
+      followButton.onclick = async () => {
+        followButton.disabled = true;
+        followButton.textContent = "جاري جلب حالة الطلب...";
+
+        try {
+          const lastOrder = JSON.parse(localStorage.getItem(LAST_ORDER_KEY));
+          const config = window.SAMA_CONFIG;
+
+          const response = await fetch(
+            config.url.replace(/\/$/, "") + "/functions/v1/track-order",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "apikey": config.key
+              },
+              body: JSON.stringify(lastOrder)
+            }
+          );
+
+          const result = await response.json();
+          if (!response.ok) throw new Error("تعذر التتبع");
+
+          const labels = {
+            pending: "قيد التجهيز",
+            prepared: "تم التجهيز",
+            received: "تم الاستلام"
+          };
+
+          followButton.textContent =
+            "📦 حالة طلبك: " + (labels[result.status] || "غير معروفة");
+        } catch (error) {
+          followButton.textContent = "تعذر التتبع، اضغط للمحاولة مجدداً";
+        } finally {
+          followButton.disabled = false;
+        }
+      };
+    }
 
     whatsapp.textContent = "الطلب أو الاستفسار عبر واتساب ↗";
     whatsapp.style.width = "100%";
@@ -205,6 +280,10 @@
 
       `;
 
+
+      
+    saveLastOrder(data);
+      
       get("cartContent").replaceChildren(panel);
       
     const trackButton = panel.querySelector("#trackMyOrder");
