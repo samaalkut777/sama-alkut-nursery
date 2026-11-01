@@ -10,7 +10,71 @@
 <header><div class="top"><div class="brand"><img src="sama-nursery-logo.png" alt="شعار مشتل سما"><div><strong>SAMA</strong><small>Al-Kout Nursery · مشتل سما الكوت</small></div></div><div class="search"><input id="search" placeholder="ابحث عن نبتة بالاسم..." aria-label="ابحث عن نبتة"></div><div class="nav"><button class="btn light" id="nurseryNav">🌿 النباتات</button><button class="btn dark" id="decorNav">✦ سما ديكور</button><button class="btn primary" id="openCart">🛒 السلة <span id="cartCount">0</span></button></div></div></header>
 <main><section class="banner"><img src="sama-nursery-brand-banner.png" alt="الهوية الرسمية لمشتل سما الكوت"></section><section class="hero"><div><div class="eyebrow">SAMA NURSERY · AL-KUT</div><h1>خلّي الطبيعة أقرب إلك</h1><p>اختار النباتات اللي تناسبك، أضفها للسلة، وأرسل طلبك للمشتل عبر واتساب.</p></div></section><div class="switches"><button class="btn primary" id="nurseryTab">🌿 مشتل سما الكوت</button><button class="btn dark" id="decorTab"><img src="sama-decor-logo.png" alt="" style="width:22px;height:22px;object-fit:contain"> قسم SAMA DECOR | سما ديكور</button></div>
 <section id="nurserySection"><div class="layout"><aside class="side"><h3>تصفّح حسب النوع</h3><div class="categories" id="categories"></div></aside><section><div class="section-head"><div><h2 id="listTitle">جميع النباتات</h2><div class="count" id="count">جارٍ تحميل النباتات...</div></div><button class="btn light" id="resetBtn">عرض الكل</button></div><div class="products" id="products"><div class="status">جارٍ الاتصال بكتالوج المشتل...</div></div></section></div></section>
-<section id="decorSection" class="hidden"><div class="decor-intro"><img src="sama-decor-logo.png" alt="شعار سما ديكور"><div><h2>SAMA DECOR | سما ديكور</h2><p>Where spaces come alive — حيث تنبض الأماكن بالحياة. تصميم • تصنيع • تنفيذ. ديكورات وأشجار وورد صناعي للمنازل والمطاعم والمقاهي والفنادق والمناسبات.</p></div></div><div class="decor-grid"><article class="decor-card"><img src="decor-olive-tree.png" alt="شجرة زيتون صناعية فاخرة"><div class="body"><h3>شجرة زيتون صناعية فاخرة</h3><p>تصميم راقٍ وأنيق. السعر حسب الحجم والكثافة والتفاصيل المطلوبة.</p><strong>السعر: حسب الطلب</strong></div></article><article class="decor-card"><img src="decor-rose-tree.png" alt="شجرة الورد الصناعي"><div class="body"><h3>شجرة الورد الصناعي</h3><p>خيارات حسب اللون والحجم وكثافة الورد.</p><strong>السعر: حسب الطلب</strong></div></article><article class="decor-card"><img src="sama-decor-logo.png" alt="شعار سما ديكور"><div class="body"><h3>تنفيذ حسب الطلب</h3><p>ديكورات وأشجار صناعية للمساحات السكنية والتجارية والمناسبات.</p><strong>للاستفسار: 07726506022</strong></div></article></div></section></main><footer>© <span id="year"></span> SAMA Nursery &amp; SAMA DECOR · الكوت - العراق · 07726506022</footer>
+<section id="decorSection" class="hidden"><div class="decor-intro"><img src="sama-decor-logo.png" alt="شعار سما ديكور"><div><h2>SAMA DECOR | سما ديكور</h2><p>Where spaces come alive — حيث تنبض الأماكن بالحياة. تصميم • تصنيع • تنفيذ. ديكورات وأشجار وورد صناعي للمنازل والمطاعم والمقاهي والفنادق والمناسبات.</p></div></div><div class="decor-grid"><article class="decor-card"><img src="decor-olive-tree.png" alt="شجرة زيتون صناعية فاخرة"><div class="body"><h3>شجرة زيتون صناعية فاخرة</h3><p>تصميم راقٍ وأنيق. السعر حسب الحجم والكثافة والتفاصيل المطلوبة.</p><strong>السعر: حسب الطلب</strong></div></article><article class="decor-card"><img src="decor-rose-tree.png" alt="شجرة الورد الصناعي"><div class="body"><h3>شجرة الورد الصناعي</h3><p>خيارات حسب اللون والحجم وكثافة الورد.</p><strong>السعر: حسب الطلب</strong></div></article><article class="decor-card"><img src="sama-decor-logo.png" alt="شعار سما ديكور"><div class="body"><h3>تنفيذ حسب الطلب</h3><p>ديكورات وأشجار صناعية للمساحات السكنية والتجارية والمناسبات.</p><strong>للاستفسار: 07726506022</strong></div></article></div></section>
+
+<div id="samaTrackingBox" style="max-width:650px;margin:20px auto;padding:16px;text-align:center">
+  <button id="samaTrackingButton" type="button" style="padding:13px 25px;background:#173f2b;color:white;border:0;border-radius:12px;font-size:16px;cursor:pointer">
+    📦 تتبع طلبي
+  </button>
+  <div id="samaTrackingResult" style="margin-top:12px"></div>
+</div>
+
+<script>
+document.getElementById("samaTrackingButton").onclick = async function () {
+  const result = document.getElementById("samaTrackingResult");
+  const saved = localStorage.getItem("sama_last_order");
+
+  if (!saved) {
+    result.textContent = "ماكو طلب محفوظ على هذا الجهاز حالياً.";
+    return;
+  }
+
+  let order;
+  try {
+    order = JSON.parse(saved);
+    if (!order.order_number || !order.tracking_code) {
+      throw new Error("بيانات الطلب ناقصة");
+    }
+  } catch (e) {
+    result.textContent = "بيانات الطلب المحفوظ غير صالحة.";
+    return;
+  }
+
+  result.textContent = "جاري جلب حالة الطلب...";
+
+  try {
+    const cfg = window.SAMA_CONFIG;
+    const response = await fetch(
+      cfg.url.replace(/\/$/, "") + "/functions/v1/track-order",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": cfg.key,
+          "Authorization": "Bearer " + cfg.key
+        },
+        body: JSON.stringify(order)
+      }
+    );
+
+    const data = await response.json();
+    if (!response.ok) throw new Error("تعذر التتبع");
+
+    const labels = {
+      pending: "قيد التجهيز",
+      prepared: "تم التجهيز",
+      received: "تم الاستلام"
+    };
+
+    result.textContent = "حالة طلبك: " +
+      (labels[data.status] || "غير معروفة");
+  } catch (e) {
+    result.textContent = "تعذر جلب حالة الطلب. حاول مرة ثانية.";
+  }
+};
+</script>
+
+</main><footer>© <span id="year"></span> SAMA Nursery &amp; SAMA DECOR · الكوت - العراق · 07726506022</footer>
 <div class="overlay" id="detailOverlay"><div class="dialog"><div class="dlghead"><h2>تفاصيل النبتة</h2><button class="close" data-close="detailOverlay">×</button></div><div class="dlgbody" id="detailContent"></div></div></div><div class="overlay" id="cartOverlay"><div class="dialog"><div class="dlghead"><h2>🛒 سلة المشتريات</h2><button class="close" data-close="cartOverlay">×</button></div><div class="dlgbody" id="cartContent"></div></div></div>
 <script src="config.js"></script><script>
 let categories=[],plants=[],active="جميع النباتات",cart={};const $=id=>document.getElementById(id);const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));const money=n=>Number(n||0).toLocaleString("en-US")+" د.ع";const ready=()=>window.SAMA_CONFIG&&window.SAMA_CONFIG.url&&window.SAMA_CONFIG.key&&!window.SAMA_CONFIG.key.includes("PASTE_");async function api(path){let c=window.SAMA_CONFIG,r=await fetch(c.url.replace(/\/$/,"")+"/rest/v1/"+path,{headers:{apikey:c.key,Authorization:"Bearer "+c.key}});if(!r.ok)throw Error("API "+r.status);return r.json()}const byId=id=>plants.find(p=>String(p.id)===String(id));
