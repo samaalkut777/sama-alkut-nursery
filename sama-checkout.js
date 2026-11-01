@@ -24,6 +24,60 @@
   }
   
 
+function showFloatingTrackingButton() {
+  let lastOrder;
+  try {
+    lastOrder = JSON.parse(localStorage.getItem(LAST_ORDER_KEY) || "null");
+  } catch (error) {
+    return;
+  }
+
+  if (!lastOrder?.order_number || !lastOrder?.tracking_code) return;
+  if (document.getElementById("samaFloatingTracking")) return;
+
+  const button = document.createElement("button");
+  button.id = "samaFloatingTracking";
+  button.type = "button";
+  button.textContent = "📦 متابعة طلبك";
+  button.style.cssText = "position:fixed;right:12px;bottom:20px;z-index:9999;background:#173f2b;color:white;border:0;border-radius:30px;padding:13px 17px;font-size:15px;font-weight:bold;box-shadow:0 3px 12px #0003;cursor:pointer;max-width:calc(100vw - 24px)";
+
+  button.onclick = async () => {
+    button.disabled = true;
+    button.textContent = "جاري التتبع...";
+    try {
+      const config = window.SAMA_CONFIG;
+      const response = await fetch(
+        config.url.replace(/\/$/, "") + "/functions/v1/track-order",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: config.key
+          },
+          body: JSON.stringify(lastOrder)
+        }
+      );
+
+      if (!response.ok) throw new Error("Tracking failed");
+      const result = await response.json();
+      const labels = {
+        pending: "قيد التجهيز",
+        prepared: "تم التجهيز",
+        received: "تم الاستلام"
+      };
+
+      alert("📦 حالة طلبك: " + (labels[result.status] || "غير معروفة"));
+    } catch (error) {
+      alert("تعذر جلب حالة الطلب. حاول مرة أخرى.");
+    } finally {
+      button.disabled = false;
+      button.textContent = "📦 متابعة طلبك";
+    }
+  };
+
+  document.body.appendChild(button);
+}
+
   function saveFields() {
     if (get("custName")) saved.name = value("custName");
     if (get("custPhone")) saved.phone = value("custPhone");
@@ -73,24 +127,9 @@
     confirm.onclick = confirmOrder;
     whatsapp.before(confirm);
     
-    try {
-      const lastOrder = JSON.parse(localStorage.getItem(LAST_ORDER_KEY) || "null");
-      if (lastOrder?.order_number && lastOrder?.tracking_code) {
-        const followButton = document.createElement("button");
-        followButton.type = "button";
-        
-        followButton.id = "followLastOrder";
-        
-        followButton.textContent = "📦 متابعة آخر طلب";
-        followButton.className = "btn primary";
-        followButton.style.cssText = "width:100%;margin-top:10px;padding:13px;border-radius:11px";
-        whatsapp.after(followButton);
-      }
-    } catch (error) {
-      console.warn("تعذر قراءة آخر طلب");
-    }
+    
 
-    const followButton = content.querySelector("#followLastOrder");
+   const followButton = document.getElementById("followLastOrder"); 
 
     
 
@@ -283,7 +322,7 @@
 
       
     saveLastOrder(data);
-      
+      showFloatingTrackingButton();
       get("cartContent").replaceChildren(panel);
       
     const trackButton = panel.querySelector("#trackMyOrder");
@@ -345,4 +384,7 @@
       }
     }
   }
+  
+showFloatingTrackingButton();
+  
 })();
