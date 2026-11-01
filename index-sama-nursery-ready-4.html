@@ -33,7 +33,7 @@ function renderCats(){let names=["جميع النباتات",...categories.filte
     ? "#categories [data-cat]"
     : "#decorCategories [data-cat]"
 ).forEach(b=>b.onclick=()=>{active=b.dataset.cat;renderCats();renderProducts()})}
-function renderProducts(){let q=$("search").value.trim().toLowerCase(),list=plants.filter(p=>p.brand===(document.getElementById("decorSection").classList.contains("hidden")?"nursery":"sama_decor")&& active==="جميع النباتات" || active==="جميع المنتجات"||p.category===active)&&(`${p.name} ${p.category} ${p.description||""}`).toLowerCase().includes(q));$("listTitle").textContent=active;$("count").textContent=list.length+" منتج";
+function renderProducts(){let q=($("search")?.value || "").trim().toLowerCase(),list=plants.filter(p=>p.brand===(document.getElementById("decorSection").classList.contains("hidden")?"nursery":"sama_decor")&& active==="جميع النباتات" || active==="جميع المنتجات"||p.category===active)&&(`${p.name} ${p.category} ${p.description||""}`).toLowerCase().includes(q));$("listTitle").textContent=active;$("count").textContent=list.length+" منتج";
 $(document.getElementById("decorSection").classList.contains("hidden") ? "products" : "decorProducts"))
 .innerHTML=
 
