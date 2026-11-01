@@ -19,67 +19,8 @@
 </div>
   <div class="decor-grid"><article class="decor-card"><img src="decor-olive-tree.png" alt="شجرة زيتون صناعية فاخرة"><div class="body"><h3>شجرة زيتون صناعية فاخرة</h3><p>تصميم راقٍ وأنيق. السعر حسب الحجم والكثافة والتفاصيل المطلوبة.</p><strong>السعر: حسب الطلب</strong></div></article><article class="decor-card"><img src="decor-rose-tree.png" alt="شجرة الورد الصناعي"><div class="body"><h3>شجرة الورد الصناعي</h3><p>خيارات حسب اللون والحجم وكثافة الورد.</p><strong>السعر: حسب الطلب</strong></div></article><article class="decor-card"><img src="sama-decor-logo.png" alt="شعار سما ديكور"><div class="body"><h3>تنفيذ حسب الطلب</h3><p>ديكورات وأشجار صناعية للمساحات السكنية والتجارية والمناسبات.</p><strong>للاستفسار: 07726506022</strong></div></article></div></section>
 
-<div id="samaTrackingBox" style="max-width:650px;margin:20px auto;padding:16px;text-align:center">
-  <button id="samaTrackingButton" type="button" style="padding:13px 25px;background:#173f2b;color:white;border:0;border-radius:12px;font-size:16px;cursor:pointer">
-    📦 تتبع طلبي
-  </button>
-  <div id="samaTrackingResult" style="margin-top:12px"></div>
-</div>
 
-<script>
-document.getElementById("samaTrackingButton").onclick = async function () {
-  const result = document.getElementById("samaTrackingResult");
-  const saved = localStorage.getItem("sama_nursery_last_order");
 
-  if (!saved) {
-    result.textContent = "ماكو طلب محفوظ على هذا الجهاز حالياً.";
-    return;
-  }
-
-  let order;
-  try {
-    order = JSON.parse(saved);
-    if (!order.order_number || !order.tracking_code) {
-      throw new Error("بيانات الطلب ناقصة");
-    }
-  } catch (e) {
-    result.textContent = "بيانات الطلب المحفوظ غير صالحة.";
-    return;
-  }
-
-  result.textContent = "جاري جلب حالة الطلب...";
-
-  try {
-    const cfg = window.SAMA_CONFIG;
-    const response = await fetch(
-      cfg.url.replace(/\/$/, "") + "/functions/v1/track-order",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "apikey": cfg.key,
-          "Authorization": "Bearer " + cfg.key
-        },
-        body: JSON.stringify(order)
-      }
-    );
-
-    const data = await response.json();
-    if (!response.ok) throw new Error("تعذر التتبع");
-
-    const labels = {
-      pending: "قيد التجهيز",
-      prepared: "تم التجهيز",
-      received: "تم الاستلام"
-    };
-
-    result.textContent = "حالة طلبك: " +
-      (labels[data.status] || "غير معروفة");
-  } catch (e) {
-    result.textContent = "تعذر جلب حالة الطلب. حاول مرة ثانية.";
-  }
-};
-</script>
 
 </main><footer>© <span id="year"></span> SAMA Nursery &amp; SAMA DECOR · الكوت - العراق · 07726506022</footer>
 <div class="overlay" id="detailOverlay"><div class="dialog"><div class="dlghead"><h2>تفاصيل النبتة</h2><button class="close" data-close="detailOverlay">×</button></div><div class="dlgbody" id="detailContent"></div></div></div><div class="overlay" id="cartOverlay"><div class="dialog"><div class="dlghead"><h2>🛒 سلة المشتريات</h2><button class="close" data-close="cartOverlay">×</button></div><div class="dlgbody" id="cartContent"></div></div></div>
