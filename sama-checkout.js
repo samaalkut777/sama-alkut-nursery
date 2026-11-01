@@ -197,9 +197,58 @@
           احتفظ برقم الطلب ورمز التتبع للاستفسار عن طلبك.
           أجور التوصيل يتم تأكيدها مع المشتل.
         </p>
+        
+<button type="button" id="trackMyOrder" style="display:block;width:100%;margin-top:16px;padding:14px;border:0;border-radius:11px;background:#173f2b;color:white;font-weight:bold;font-size:16px;cursor:pointer">
+  📦 تتبع طلبي
+</button>
+<div id="trackingResult" style="margin-top:12px"></div>
+
       `;
 
       get("cartContent").replaceChildren(panel);
+      
+    const trackButton = panel.querySelector("#trackMyOrder");
+    const trackingResult = panel.querySelector("#trackingResult");
+
+    trackButton.onclick = async () => {
+      trackButton.disabled = true;
+      trackingResult.textContent = "جاري جلب حالة طلبك...";
+
+      try {
+        const config = window.SAMA_CONFIG;
+        const response = await fetch(
+          config.url.replace(/\/$/, "") + "/functions/v1/track-order",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "apikey": config.key
+            },
+            body: JSON.stringify({
+              order_number: data.order_number,
+              tracking_code: data.tracking_code
+            })
+          }
+        );
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "تعذر تتبع الطلب");
+
+        const labels = {
+          pending: "قيد التجهيز",
+          prepared: "تم التجهيز",
+          received: "تم الاستلام"
+        };
+
+        trackingResult.textContent =
+          "📦 حالة طلبك: " + (labels[result.status] || "غير معروفة");
+      } catch (error) {
+        trackingResult.textContent = "تعذر جلب حالة الطلب. حاول مرة ثانية.";
+      } finally {
+        trackButton.disabled = false;
+      }
+    };
+      
       cart = {};
       countCart();
       saved.name = saved.phone = saved.area = saved.note = "";
