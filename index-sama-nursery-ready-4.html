@@ -22,7 +22,7 @@
 <script>
 document.getElementById("samaTrackingButton").onclick = async function () {
   const result = document.getElementById("samaTrackingResult");
-  const saved = localStorage.getItem("sama_nursery_last_order")
+  const saved = localStorage.getItem("sama_nursery_last_order");
 
   if (!saved) {
     result.textContent = "ماكو طلب محفوظ على هذا الجهاز حالياً.";
