@@ -17,7 +17,7 @@
   <button type="button" class="cat" data-decor-cat="الأشجار الصناعية">الأشجار الصناعية</button>
   <button type="button" class="cat" data-decor-cat="سما ديكور">سما ديكور</button>
 </div>
-  <div class="decor-grid"><article class="decor-card"><img src="decor-olive-tree.png" alt="شجرة زيتون صناعية فاخرة"><div class="body"><h3>شجرة زيتون صناعية فاخرة</h3><p>تصميم راقٍ وأنيق. السعر حسب الحجم والكثافة والتفاصيل المطلوبة.</p><strong>السعر: حسب الطلب</strong></div></article><article class="decor-card"><img src="decor-rose-tree.png" alt="شجرة الورد الصناعي"><div class="body"><h3>شجرة الورد الصناعي</h3><p>خيارات حسب اللون والحجم وكثافة الورد.</p><strong>السعر: حسب الطلب</strong></div></article><article class="decor-card"><img src="sama-decor-logo.png" alt="شعار سما ديكور"><div class="body"><h3>تنفيذ حسب الطلب</h3><p>ديكورات وأشجار صناعية للمساحات السكنية والتجارية والمناسبات.</p><strong>للاستفسار: 07726506022</strong></div></article></div></section>
+  <div class="decor-grid"><article class="decor-card"><img src="decor-olive-tree.png" alt="شجرة زيتون صناعية فاخرة"><div class="body"><h3>شجرة زيتون صناعية فاخرة</h3><p>تصميم راقٍ وأنيق. السعر حسب الحجم والكثافة والتفاصيل المطلوبة.</p><strong>السعر: حسب الطلب</strong></div></article><article class="decor-card"><img src="decor-rose-tree.png" alt="شجرة الورد الصناعي"><div class="body"><h3>شجرة الورد الصناعي</h3><p>خيارات حسب اللون والحجم وكثافة الورد.</p><strong>السعر: حسب الطلب</strong></div></article><article class="decor-card"><img src="sama-decor-logo.png" alt="شعار سما ديكور"><div class="body"><h3>تنفيذ حسب الطلب</h3><p>ديكورات وأشجار صناعية للمساحات السكنية والتجارية والمناسبات.</p><strong>للاستفسار: 07726506022</strong></div></article></div><div class="decor-grid" id="decorLiveProducts" aria-live="polite"></div></section>
 
 
 
@@ -36,25 +36,41 @@ function close(id){$(id).classList.remove("open")}function toast(s){let t=$("toa
 async function load(){$("year").textContent=new Date().getFullYear();if(!ready())
   
 {$("products").innerHTML='<div class="status">راجع إعداد الاتصال في config.js.</div>';return}try{let 
-  [cats,prods]=await Promise.all([api("categories?select=id,name,slug,brand&order=id.asc"),api("products?select=id,name,description,price,image_url,category_id,brand,is_available,sort_order&is_available=eq.true&order=sort_order.asc")]);categories=cats;let map=new Map(cats.map(c=>[String(c.id),c]));plants=prods.filter(p=> p.brand==="nursery"||p.brand==="sama_decor").map(p=>({...p,category:(map.get(String(p.category_id))||{}).name||"نباتات أخرى"}));renderCats();renderProducts();countCart()}catch(e){console.error(e);$("products").innerHTML='<div class="status">تعذّر تحميل المنتجات. راجع إعدادات Supabase وسياسات القراءة.</div>'}}load();
+  [cats,prods]=await Promise.all([api("categories?select=id,name,slug,brand&order=id.asc"),api("products?select=id,name,description,price,image_url,category_id,brand,is_available,sort_order&is_available=eq.true&order=sort_order.asc")]);categories=cats;let map=new Map(cats.map(c=>[String(c.id),c]));plants=prods.filter(p=> p.brand==="nursery"||p.brand==="sama_decor").map(p=>({...p,category:(map.get(String(p.category_id))||{}).name||"نباتات أخرى"}));renderCats();renderProducts();countCart();renderDecorProducts()}catch(e){console.error(e);$("products").innerHTML='<div class="status">تعذّر تحميل المنتجات. راجع إعدادات Supabase وسياسات القراءة.</div>'}}load();
  
+// Products in SAMA DECOR are drawn from the same Supabase catalog as the nursery.
+// The original static portfolio cards and nursery checkout remain unchanged.
+let selectedDecorCategory = "سما ديكور";
+function renderDecorProducts() {
+  const grid = document.getElementById("decorLiveProducts");
+  if (!grid) return;
+  const list = plants.filter(p => p.brand === "sama_decor" &&
+    (selectedDecorCategory === "سما ديكور" || p.category === selectedDecorCategory));
+  grid.innerHTML = list.map(p => `<article class="decor-card">
+    <img loading="lazy" src="${esc(p.image_url || 'sama-decor-logo.png')}" alt="${esc(p.name)}" onerror="this.onerror=null;this.src='sama-decor-logo.png'">
+    <div class="body"><h3>${esc(p.name)}</h3><p>${esc(p.description || '')}</p>
+    <strong>${money(p.price)}</strong>
+    <div class="actions" style="margin-top:12px">
+      <button type="button" class="add" data-decor-add="${esc(p.id)}">＋ أضف للسلة</button>
+      <button type="button" class="details" data-decor-detail="${esc(p.id)}">عرض التفاصيل</button>
+    </div></div></article>`).join("");
+  grid.querySelectorAll("[data-decor-add]").forEach(b => b.onclick = () => add(b.dataset.decorAdd));
+  grid.querySelectorAll("[data-decor-detail]").forEach(b => b.onclick = () => details(b.dataset.decorDetail));
+}
 document.querySelectorAll("[data-decor-cat]").forEach(button => {
   button.addEventListener("click", () => {
     document.querySelectorAll("[data-decor-cat]").forEach(b => b.classList.remove("active"));
     button.classList.add("active");
-
-    const selected = button.dataset.decorCat;
-    
-
-document.querySelectorAll(".decor-card").forEach(card => {
-  const title = card.querySelector("h3")?.textContent || "";
-  card.style.display = selected === "سما ديكور" ||
-    (selected === "الاشجار الصناعية" && title.includes("شجرة")) ||
-    (selected === "الورد الصناعي" && title.includes("الورد")) ||
-    (selected === "ديكورات الورد" && title.includes("ديكور"))
-    ? "" : "none";
-});
-});
+    selectedDecorCategory = button.dataset.decorCat;
+    document.querySelectorAll("#decorSection .decor-grid:not(#decorLiveProducts) .decor-card").forEach(card => {
+      const title = card.querySelector("h3")?.textContent || "";
+      card.style.display = selectedDecorCategory === "سما ديكور" ||
+        (selectedDecorCategory === "الأشجار الصناعية" && title.includes("شجرة")) ||
+        (selectedDecorCategory === "الورد الصناعي" && title.includes("الورد")) ||
+        (selectedDecorCategory === "ديكورات الورد" && title.includes("ديكور")) ? "" : "none";
+    });
+    renderDecorProducts();
+  });
 });
 </script><script src="sama-checkout.js"></script>
 </body></html>
