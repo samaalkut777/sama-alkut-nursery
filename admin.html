@@ -1,0 +1,270 @@
+
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>لوحة تحكم | مشتل سما الكوت</title>
+<style>
+:root{--green:#174c35;--dark:#133c2b;--bg:#f4f7f3;--line:#e3eae4;--muted:#65766c}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--dark);font-family:Tahoma,Arial,sans-serif;padding:18px}main{max-width:1120px;margin:auto}header,.panel{background:white;padding:22px;border-radius:20px;margin-bottom:18px;border:1px solid var(--line);box-shadow:0 5px 22px #183d2c08}header{background:linear-gradient(120deg,#174c35,#286d4b);color:white;display:flex;justify-content:space-between;align-items:center;gap:14px}header h1{margin:0 0 6px;font-size:25px}header p{margin:0;color:#dceee3}.brandmark{font-size:36px;background:#ffffff1b;border-radius:16px;padding:12px}h2{font-size:20px;margin:0 0 16px}h3{font-size:16px}input,textarea,select,button{box-sizing:border-box;width:100%;padding:12px;margin:6px 0;border:1px solid #d8e1da;border-radius:11px;font-size:15px;font-family:inherit}input:focus,textarea:focus,select:focus{outline:2px solid #a2c8b0;border-color:var(--green)}button{background:var(--green);color:white;border:0;font-weight:bold;cursor:pointer;transition:background .15s,transform .15s}button:active{transform:scale(.99)}button:hover{filter:brightness(1.06)}button:disabled{opacity:.55;cursor:wait}button.secondary{background:#eef3ef;color:var(--dark)}button.danger{background:#9b2727}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.item{border:1px solid var(--line);border-radius:15px;padding:16px;margin:10px 0;background:#fff}.item img{width:90px;height:90px;object-fit:cover;border-radius:10px}.muted{color:var(--muted);font-size:14px}#app{display:none}.nav{display:flex;gap:9px;position:sticky;top:8px;z-index:10;background:#ffffffee;backdrop-filter:blur(10px);padding:10px;border:1px solid var(--line);border-radius:17px;margin-bottom:18px;box-shadow:0 6px 18px #173d2c0c}.nav button{margin:0;width:auto;flex:1;background:transparent;color:#3c5c4b;white-space:nowrap;padding:13px 9px}.nav button.active{background:var(--green);color:white}.view{display:none}.view.active{display:block}.topline{display:flex;justify-content:space-between;align-items:center;gap:12px}.topline button{width:auto;padding:10px 16px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}.stat{background:white;border:1px solid var(--line);padding:20px;border-radius:17px}.stat span{font-size:13px;color:var(--muted)}.stat strong{display:block;font-size:29px;margin-top:8px}.section-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.section-actions>*{flex:1;min-width:150px}.section-actions button{max-width:220px}.product-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.product-grid .item{margin:0}.product-grid .item p{overflow-wrap:anywhere}.item .row button{padding:10px}.order-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.pill{display:inline-block;border-radius:999px;padding:7px 12px;background:#edf4ef;color:#235a3d;font-size:12px;font-weight:bold}.order-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.order-grid .item{margin:0}.order-grid .item p{line-height:1.7;margin:7px 0;overflow-wrap:anywhere}.order-grid .item h3{margin:6px 0}.order-grid .item select{margin-top:10px}.empty{padding:30px;text-align:center;color:var(--muted)}#login{max-width:480px;margin:30px auto}#ordersMsg,#msg{min-height:20px}.hint{font-size:13px;color:var(--muted)}
+@media(max-width:700px){body{padding:10px}header,.panel{padding:16px;border-radius:16px}header h1{font-size:21px}.brandmark{font-size:26px}.nav{gap:4px;padding:6px;top:4px}.nav button{font-size:12px;padding:11px 3px}.stats{gap:7px}.stat{padding:13px}.stat strong{font-size:23px}.stat span{font-size:11px}.product-grid,.order-grid{grid-template-columns:1fr}.row{gap:7px}.topline{align-items:flex-start}.topline h2{font-size:18px}}
+</style>
+</head>
+<body>
+<main>
+<header><div><h1>مشتل سما الكوت</h1><p>لوحة الإدارة • SAMA Dashboard</p></div><div class="brandmark">🌿</div></header>
+<section class="panel" id="login"><h2>تسجيل دخول المدير</h2><input id="email" type="email" placeholder="البريد الإلكتروني" autocomplete="username"><input id="password" type="password" placeholder="كلمة المرور" autocomplete="current-password"><button id="loginBtn">دخول</button><p id="loginMsg" class="muted">سجّل الدخول بحساب المدير الذي أنشأته في Supabase.</p></section>
+<section id="app">
+<nav class="nav" aria-label="أقسام لوحة التحكم"><button type="button" class="active" data-view="home">⌂ الرئيسية</button><button type="button" data-view="catalog">🌱 المنتجات</button><button type="button" data-view="orders">📦 الطلبات <span id="newCount"></span></button></nav>
+<section id="homeView" class="view active"><div class="stats"><div class="stat"><span>منتجات القسم الحالي</span><strong id="productCount">—</strong></div><div class="stat"><span>طلبات قيد التجهيز</span><strong id="pendingCount">—</strong></div><div class="stat"><span>إجمالي الطلبات المعروضة</span><strong id="orderCount">—</strong></div></div><div class="panel"><h2>أهلاً بك في لوحة الإدارة 👋</h2><p class="muted">كل قسم بصفحة مستقلة. انتقل للطلبات بضغطة واحدة مهما زاد عدد المنتجات.</p><div class="row"><button type="button" data-go="orders">عرض طلبات الزبائن</button><button type="button" class="secondary" data-go="catalog">إدارة المنتجات</button></div></div></section>
+<section id="catalogView" class="view"><div class="panel"><div class="topline"><h2>إدارة المنتجات</h2><button type="button" class="secondary" id="logoutBtn">تسجيل الخروج</button></div><div class="row"><button id="nurseryBtn">🌱 منتجات المشتل</button><button id="decorBtn" class="secondary">✨ منتجات سما ديكور</button></div><h2 id="formTitle" style="margin-top:20px">إضافة منتج جديد</h2><input id="productName" placeholder="اسم النبات أو المنتج"><textarea id="description" placeholder="وصف المنتج"></textarea><div class="row"><input id="price" type="number" min="0" step="250" placeholder="السعر بالدينار العراقي"><select id="category"></select></div><label for="photo">صورة المنتج</label><input id="photo" type="file" accept="image/*"><p class="hint">يمكن اختيار صورة من جهازك. تُرفع إلى مخزن صور Supabase.</p><button id="saveBtn">حفظ المنتج</button><button class="secondary" id="cancelBtn" style="display:none">إلغاء التعديل</button><p id="msg" class="muted" aria-live="polite"></p></div><div class="panel"><h2>المنتجات الحالية</h2><input id="productSearch" type="search" placeholder="🔎 ابحث باسم المنتج..."><div id="products" class="product-grid">جارٍ التحميل...</div></div></section>
+<section id="ordersView" class="view"><div class="panel" id="ordersPanel"><div class="topline"><h2>📦 إدارة طلبات الزبائن</h2><button id="refreshOrdersBtn" class="secondary">↻ تحديث</button></div><p class="muted">عرض الطلبات وتحديث حالة تجهيزها واستلامها.</p><div class="row"><input id="orderSearch" type="search" placeholder="بحث بالاسم أو الرقم أو المنطقة"><select id="orderFilter"><option value="all">جميع الحالات</option><option value="pending">قيد التجهيز</option><option value="prepared">تم التجهيز</option><option value="received">تم الاستلام</option></select></div><p id="ordersMsg" class="muted" aria-live="polite"></p><div id="ordersList" class="order-grid">جارٍ تحميل الطلبات...</div></div></section>
+</section></main>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const $=id=>document.getElementById(id);
+let db,brand="nursery",categories=[],editing=null,products=[],ordersCache=[],orderItemsCache=[];
+
+function message(t){$("msg").textContent=t}
+function loginMessage(t){$("loginMsg").textContent=t}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+
+async function start(){
+ if(!window.SAMA_CONFIG?.url||!window.SAMA_CONFIG?.key){
+  loginMessage("إعدادات Supabase غير موجودة في config.js.");return;
+ }
+ db=window.supabase.createClient(window.SAMA_CONFIG.url,window.SAMA_CONFIG.key);
+ const {data}=await db.auth.getSession();
+ if(data.session) await openApp();
+}
+async function openApp(){
+ $("login").style.display="none";$("app").style.display="block";
+ await loadCategories();await loadProducts();await loadOrders();
+}
+$("loginBtn").onclick=async()=>{
+ loginMessage("جارٍ تسجيل الدخول...");
+ const {error}=await db.auth.signInWithPassword({
+  email:$("email").value.trim(),password:$("password").value
+ });
+ if(error){loginMessage("تعذر الدخول: "+error.message);return}
+ await openApp();
+};
+$("logoutBtn").onclick=async()=>{
+ await db.auth.signOut();location.reload();
+};
+
+async function loadCategories(){
+ const {data,error}=await db.from("categories").select("id,name,brand").order("sort_order");
+ if(error){message("تعذر تحميل التصنيفات: "+error.message);return}
+ categories=data||[];renderCategories();
+}
+function renderCategories(){
+ const list=categories.filter(c=>c.brand===brand);
+ $("category").innerHTML=list.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join("");
+}
+async function loadProducts(){
+ $("products").textContent="جارٍ تحميل المنتجات...";
+ const {data,error}=await db.from("products")
+  .select("id,category_id,name,description,price,image_url,brand,is_available")
+  .eq("brand",brand).order("id",{ascending:false});
+ if(error){$("products").textContent="تعذر التحميل. تأكد من صلاحيات قاعدة البيانات.";return}
+ products=data||[];renderProducts();$("productCount").textContent=products.length;
+}
+function renderProducts(){
+ const term=$("productSearch").value.trim().toLocaleLowerCase();
+ const shown=products.filter(p=>p.name.toLocaleLowerCase().includes(term));
+ if(!shown.length){$("products").textContent="لا توجد منتجات بهذا القسم حالياً.";return}
+ $("products").innerHTML=shown.map(p=>`
+ <article class="item">
+ ${p.image_url?`<img src="${esc(p.image_url)}" alt="">`:""}
+ <h3>${esc(p.name)}</h3>
+ <p>${esc(p.description)}</p>
+ <strong>${Number(p.price).toLocaleString("en-US")} د.ع</strong>
+ <div class="row">
+ <button data-edit="${p.id}">تعديل</button>
+ <button class="danger" data-delete="${p.id}">حذف</button>
+ </div></article>`).join("");
+}
+$("nurseryBtn").onclick=async()=>{brand="nursery";editing=null;renderCategories();resetForm();await loadProducts()};
+$("decorBtn").onclick=async()=>{brand="sama_decor";editing=null;renderCategories();resetForm();await loadProducts()};
+
+function resetForm(){
+ editing=null;$("productName").value="";$("description").value="";
+ $("price").value="";$("photo").value="";
+ $("formTitle").textContent="إضافة منتج جديد";
+ $("saveBtn").textContent="حفظ المنتج";$("cancelBtn").style.display="none";
+}
+$("cancelBtn").onclick=resetForm;
+
+$("products").onclick=async e=>{
+ const edit=e.target.dataset.edit,del=e.target.dataset.delete;
+ if(edit){
+  const p=products.find(x=>x.id===Number(edit));if(!p)return;
+  editing=p;$("productName").value=p.name;$("description").value=p.description||"";
+  $("price").value=p.price;$("category").value=p.category_id;
+  $("formTitle").textContent="تعديل المنتج";
+  $("saveBtn").textContent="حفظ التعديلات";$("cancelBtn").style.display="block";
+  $("formTitle").scrollIntoView({behavior:"smooth",block:"start"});
+ }
+ if(del){
+  const p=products.find(x=>x.id===Number(del));if(!p)return;
+  if(!confirm("متأكد تريد حذف "+p.name+"؟"))return;
+  const {error}=await db.from("products").delete().eq("id",p.id);
+  if(error){message("فشل الحذف. تأكد من صلاحيات المدير.");return}
+  message("تم حذف المنتج.");await loadProducts();
+ }
+};
+
+$("saveBtn").onclick=async()=>{
+ const name=$("productName").value.trim();
+ const price=Number($("price").value);
+ if(!name||$("price").value===""||price<0||!Number.isFinite(price)){
+  message("أدخل اسم المنتج والسعر بصورة صحيحة.");return;
+ }
+ const categoryId=Number($("category").value);
+ if(!categoryId){message("اختر التصنيف أولاً.");return}
+ $("saveBtn").disabled=true;message("جارٍ الحفظ...");
+ try{
+  let imageUrl=editing?.image_url||null;
+  const file=$("photo").files[0];
+  if(file){
+   if(!file.type.startsWith("image/"))throw Error("الملف المختار ليس صورة.");
+   if(file.size>8*1024*1024)throw Error("حجم الصورة يجب أن يكون أقل من 8 ميغابايت.");
+   const ext=(file.name.split(".").pop()||"jpg").replace(/[^a-zA-Z0-9]/g,"");
+   const path=`${brand}/${crypto.randomUUID()}.${ext}`;
+   const {error:upErr}=await db.storage.from("plant-images").upload(path,file,{upsert:false});
+   if(upErr)throw upErr;
+   const {data:urlData}=db.storage.from("plant-images").getPublicUrl(path);
+   imageUrl=urlData.publicUrl;
+  }
+  const item={
+   name,description:$("description").value.trim(),
+   price,category_id:categoryId,image_url:imageUrl,brand,
+   is_available:true
+  };
+  let result;
+  if(editing) result=await db.from("products").update(item).eq("id",editing.id);
+  else result=await db.from("products").insert(item);
+  if(result.error)throw result.error;
+  message("تم الحفظ بنجاح.");resetForm();await loadProducts();
+ }catch(err){
+  message("لم يتم الحفظ: "+(err.message||"تحقق من صلاحيات قاعدة البيانات ومخزن الصور."));
+ }finally{$("saveBtn").disabled=false}
+};
+
+const orderStatuses = {
+  pending: "قيد التجهيز",
+  prepared: "تم التجهيز",
+  received: "تم الاستلام"
+};
+
+async function loadOrders() {
+  $("ordersMsg").textContent = "جارٍ تحديث الطلبات...";
+  const { data, error } = await db.from("orders")
+    .select("id,order_number,customer_name,customer_phone,customer_area,customer_note,total,status,created_at")
+    .order("created_at", { ascending: false })
+    .limit(100);
+
+  if (error) {
+    $("ordersMsg").textContent = "تعذر تحميل الطلبات: " + error.message;
+    return;
+  }
+
+  const orders = data || [];
+   ordersCache=orders;$("orderCount").textContent=orders.length;$("pendingCount").textContent=orders.filter(o=>o.status==="pending").length;$("newCount").textContent=orders.filter(o=>o.status==="pending").length||"";
+  $("ordersMsg").textContent = "عدد الطلبات المعروضة: " + orders.length;
+
+  if (!orders.length) {
+    $("ordersList").textContent = "لا توجد طلبات حالياً.";
+    return;
+  }
+
+  const ids = orders.map(o => o.id);
+  const { data: items, error: itemsError } = await db
+    .from("order_items")
+    .select("order_id,product_name,quantity,unit_price,line_total")
+    .in("order_id", ids);
+
+  if (itemsError) {
+    $("ordersMsg").textContent = "تعذر تحميل تفاصيل الطلبات: " + itemsError.message;
+    return;
+  }
+
+  orderItemsCache=items||[];renderOrders();
+}
+
+function renderOrders(){
+   const term=$("orderSearch").value.trim().toLocaleLowerCase();
+   const filter=$("orderFilter").value;
+   const filtered=ordersCache.filter(o=>(filter==="all"||o.status===filter)&&[o.order_number,o.customer_name,o.customer_phone,o.customer_area].some(v=>String(v||"").toLocaleLowerCase().includes(term)));
+   if(!filtered.length){$("ordersList").innerHTML="<p class=\"empty\">لا توجد طلبات مطابقة.</p>";return}
+   $("ordersList").innerHTML = filtered.map(o => {
+    const lines = orderItemsCache.filter(i => i.order_id === o.id);
+    return `
+      <article class="item">
+        <h3>طلب ${esc(o.order_number)}</h3>
+        <p><strong>الزبون:</strong> ${esc(o.customer_name)}</p>
+        <p><strong>الهاتف:</strong> ${esc(o.customer_phone)}</p>
+        <p><strong>المنطقة:</strong> ${esc(o.customer_area || "غير محددة")}</p>
+        <p><strong>ملاحظات:</strong> ${esc(o.customer_note || "لا توجد")}</p>
+        <p><strong>التاريخ:</strong> ${esc(new Date(o.created_at).toLocaleString("ar-IQ"))}</p>
+        <h3>المنتجات المطلوبة</h3>
+        ${lines.map(i => `
+          <p>${esc(i.product_name)} × ${Number(i.quantity)}
+          — ${Number(i.line_total).toLocaleString("en-US")} د.ع</p>
+        `).join("")}
+        <p><strong>الإجمالي:</strong> ${Number(o.total).toLocaleString("en-US")} د.ع</p>
+        <label>حالة الطلب</label>
+        <select data-order-id="${esc(o.id)}">
+          ${Object.entries(orderStatuses).map(([value, label]) =>
+            `<option value="${value}" ${o.status === value ? "selected" : ""}>${label}</option>`
+          ).join("")}
+        </select>
+      </article>`;
+  }).join("");
+}
+
+$("refreshOrdersBtn").onclick = loadOrders;
+
+$("ordersList").onchange = async e => {
+  const select = e.target.closest("select[data-order-id]");
+  if (!select) return;
+
+  const id = select.dataset.orderId;
+  const status = select.value;
+  select.disabled = true;
+
+  const { error } = await db.from("orders")
+    .update({ status })
+    .eq("id", id);
+
+  if (error) {
+    $("ordersMsg").textContent = "فشل تحديث الحالة: " + error.message;
+  } else {
+    $("ordersMsg").textContent = "تم تحديث حالة الطلب بنجاح.";
+  }
+
+  await loadOrders();
+};
+
+function showView(view){
+ document.querySelectorAll(".view").forEach(el=>el.classList.toggle("active",el.id===view+"View"));
+ document.querySelectorAll(".nav button").forEach(el=>el.classList.toggle("active",el.dataset.view===view));
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+document.querySelectorAll("[data-view],[data-go]").forEach(el=>el.addEventListener("click",()=>showView(el.dataset.view||el.dataset.go)));
+$("productSearch").addEventListener("input",renderProducts);
+$("orderSearch").addEventListener("input",renderOrders);
+$("orderFilter").addEventListener("change",renderOrders);
+function syncBrandButtons(){ $("nurseryBtn").classList.toggle("secondary",brand!=="nursery");$("decorBtn").classList.toggle("secondary",brand!=="sama_decor"); }
+$("nurseryBtn").addEventListener("click",syncBrandButtons);
+$("decorBtn").addEventListener("click",syncBrandButtons);
+
+
+ start();
+</script>
+</body>
+</html>
